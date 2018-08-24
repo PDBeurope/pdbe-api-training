@@ -23,8 +23,6 @@ If installing using Anaconda, there is no additional prerequisites. If installin
 From command line on Unix machine these would be the steps setting up everyone:
 
 ```
-pip3 install --upgrade pip
-pip3 install jupyter
 mkdir pdbe_jupyter
 cd pdbe_jupyter
 git clone https://github.com/PDBeurope/pdbe-api-training .
