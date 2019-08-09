@@ -4,6 +4,12 @@ This repository contains Jupyter Notebooks that can be used as training material
 
 ## Getting Started
 
+Either use Binder to use the notebook:
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/PDBeurope/pdbe-api-training/master)
+
+Or
+
 You will need to have Jupyter installed on your machine. For Linux/OSX machines, simply type:
 
 ```
