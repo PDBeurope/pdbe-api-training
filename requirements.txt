@@ -3,3 +3,6 @@ matplotlib
 pandas
 cufflinks
 altair
+vega_datasets
+notebook
+vega
