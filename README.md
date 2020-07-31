@@ -39,7 +39,8 @@ Jupyter Notebook will open a window in your browser, and you can select the spec
 
 ## Authors
 
-* **Mihaly Varadi** - *Initial work* - [mvaradi](https://github.com/mvaradi)
+* **Mihaly Varadi** - *Initial work* - [github](https://github.com/mvaradi)
+* **John Berrisford** - *Additional notebooks* - [github](https://github.com/berrisfordjohn)
 
 ## License
 
