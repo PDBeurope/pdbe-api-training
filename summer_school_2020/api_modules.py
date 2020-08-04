@@ -1,22 +1,17 @@
-import requests
 import pandas as pd
+import requests
 
 # settings for PDBe API
 base_url = "https://www.ebi.ac.uk/pdbe/"  # the beginning of the URL for PDBe's API.
-
-# api_base = base_url + "api/"
-
 search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDBe's search API.
 
 
 def make_request(search_term, number_of_rows=10):
     """
-    This function can make GET requests to
-    the PDBe search API
-
-    :param url: String,
-    :param pdb_id: String
-    :return: JSON
+    makes a get request to the PDBe API
+    :param search_term: the terms used to search
+    :param number_of_rows: number or rows to return - limited to 10
+    :return dict: response JSON
     """
     search_variables = '&wt=json&rows={}'.format(number_of_rows)
     url = search_url + search_term + search_variables
@@ -32,35 +27,42 @@ def make_request(search_term, number_of_rows=10):
 
 
 def format_search_terms(search_terms, filter_terms=None):
-    # print('formatting search terms: %s' % search_terms)
-    search_string = ''
+    """
+    Change search terms from a dictionary to a string for the URL
+    :param dict search_terms: dictionary of search terms
+    :param lst filter_terms: list of terms to filter with
+    :return str: search string
+    """
     filter_string = ''
     search_list = []
     if isinstance(search_terms, dict):
         for key in search_terms:
             term = search_terms.get(key)
             if ' ' in term:
-                if not '"' in term:
+                if '"'not in term:
                     term = '"{}"'.format(term)
-                elif not "'" in term:
+                elif "'" not in term:
                     term = "'{}'".format(term)
             search_list.append('{}:{}'.format(key, term))
         search_string = ' AND '.join(search_list)
+        if filter_terms:
+            filter_string = '&fl={}'.format(','.join(filter_terms))
+        final_search_string = 'q={}{}'.format(search_string, filter_string)
+        return final_search_string
     else:
-        if '&' in search_terms:
-            search_string = search_terms.replace('&', ' AND ')
-        else:
-            search_string = search_terms
-    if filter_terms:
-        filter_string = '&fl={}'.format(','.join(filter_terms))
-    # print('formatted search terms: %s' % search_string)
-    final_search_string = 'q={}{}'.format(search_string, filter_string)
-    return final_search_string
+        print('search terms is not defined as a dictionary')
+        return ''
 
 
-def run_search(search_terms, filter_terms=None, number_of_rows=100):
+def run_search(search_terms, filter_terms=None, number_of_rows=10):
+    """
+    Run the search with set of search terms
+    :param dict search_terms: dictionary of search terms
+    :param list filter_terms: list of terms to filter by
+    :param int number_of_rows: number of search rows to return
+    :return lst: list of results
+    """
     search_term = format_search_terms(search_terms, filter_terms)
-
     response = make_request(search_term, number_of_rows)
     results = response.get('response', {}).get('docs', [])
     print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
@@ -69,8 +71,9 @@ def run_search(search_terms, filter_terms=None, number_of_rows=100):
 
 def change_lists_to_strings(results):
     """
-    input - list of results from search
-    output - list of results with lists changed into strings
+    updates lists to strings for loading into Pandas
+    :param dict results: dictionary of results to process
+    :return dict: dictionary of results
     """
     for row in results:
         for data in row:
@@ -82,9 +85,10 @@ def change_lists_to_strings(results):
 
     return results
 
+
 def pandas_dataset(list_of_results):
-    results = change_lists_to_strings(list_of_results) # we have added our function to change lists to strings
-    df = pd.DataFrame(list_of_results)
+    results = change_lists_to_strings(list_of_results)  # we have added our function to change lists to strings
+    df = pd.DataFrame(results)
 
     return df
 
@@ -121,7 +125,6 @@ def pandas_plot_multi_groupby_min(results, first_column_to_group_by, second_colu
                                   use_min=False, use_max=False):
     df = pandas_dataset(results)
     new_df = df.groupby([first_column_to_group_by])[second_column_to_group_by]
-    ds = None
     if use_min:
         ds = new_df.min()
     elif use_max:
