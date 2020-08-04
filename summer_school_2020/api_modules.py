@@ -38,8 +38,8 @@ def format_search_terms(search_terms, filter_terms=None):
     if isinstance(search_terms, dict):
         for key in search_terms:
             term = search_terms.get(key)
-            if ' ' in term:
-                if '"'not in term:
+            if ' ' in term and not '[' in term:
+                if '"' not in term:
                     term = '"{}"'.format(term)
                 elif "'" not in term:
                     term = "'{}'".format(term)
@@ -63,10 +63,14 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10):
     :return lst: list of results
     """
     search_term = format_search_terms(search_terms, filter_terms)
-    response = make_request(search_term, number_of_rows)
-    results = response.get('response', {}).get('docs', [])
-    print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
-    return results
+    if search_term:
+        response = make_request(search_term, number_of_rows)
+        if response:
+            results = response.get('response', {}).get('docs', [])
+            print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
+            return results
+    print('No results')
+    return []
 
 
 def change_lists_to_strings(results):
@@ -118,7 +122,7 @@ def pandas_plot_multi_groupby(results, first_column_to_group_by, second_column_t
     df = pandas_dataset(results)
     new_df = df.groupby([first_column_to_group_by, second_column_to_group_by])
     ds = new_df.count().unstack().reset_index(first_column_to_group_by)
-    ds.plot(x=first_column_to_group_by, y=y_axis, kind=graph_type)
+    ds.plot(x=first_column_to_group_by, y=y_axis, kind=graph_type).legend(bbox_to_anchor=(1.04,1))
 
 
 def pandas_plot_multi_groupby_min(results, first_column_to_group_by, second_column_to_group_by, graph_type='line',
