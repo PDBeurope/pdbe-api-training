@@ -54,6 +54,54 @@ def format_search_terms(search_terms, filter_terms=None):
         return ''
 
 
+def format_sequence_search_terms(sequence, group_field='pdb_id', filter_terms=None):
+    """
+    Format parameters for a sequence search
+    :param str sequence: one letter sequence
+    :param str group_field: Field to group by
+    :param lst filter_terms: Terms to filter the results by
+    :return str: search string
+    """
+    params = {'group': 'true',
+              'group.field': group_field,
+              'group.ngroups': 'true',
+              'json.nl': 'map',
+              'start': '0',
+              'sort': 'fasta(e_value) asc',
+              'xjoin_fasta': 'true',
+              'bf': 'fasta(percentIdentity)',
+              'xjoin_fasta.external.expupperlim': '0.1',
+              'xjoin_fasta.external.sequence': sequence,
+              'q': '*:*',
+              'fq': '{!xjoin}xjoin_fasta'
+              }
+    search_list = []
+    for item in params:
+        value = params[item]
+        search_list.append('{}={}'.format(item, value))
+    search_string = '&'.join(search_list)
+    if filter_terms:
+        filter_string = '&fl={}'.format(','.join(filter_terms))
+        search_string += filter_string
+
+    return search_string
+
+
+def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
+    """
+    Runs a sequence search and results the results
+    :param str sequence: sequence in one letter code
+    :param lst filter_terms: terms to filter the results by
+    :param int number_of_rows: number of results to return
+    :return lst: List of results
+    """
+    group_field = 'pdb_id'
+    search_term = format_sequence_search_terms(sequence=sequence, filter_terms=filter_terms, group_field=group_field)
+    response = make_request(search_term, number_of_rows)
+    results = response.get('grouped', {}).get(group_field, {}).get('groups', [])[0].get('doclist', {}).get('docs', [])
+    return results
+
+
 def run_search(search_terms, filter_terms=None, number_of_rows=10):
     """
     Run the search with set of search terms
@@ -122,7 +170,7 @@ def pandas_plot_multi_groupby(results, first_column_to_group_by, second_column_t
     df = pandas_dataset(results)
     new_df = df.groupby([first_column_to_group_by, second_column_to_group_by])
     ds = new_df.count().unstack().reset_index(first_column_to_group_by)
-    ds.plot(x=first_column_to_group_by, y=y_axis, kind=graph_type).legend(bbox_to_anchor=(1.04,1))
+    ds.plot(x=first_column_to_group_by, y=y_axis, kind=graph_type).legend(bbox_to_anchor=(1.04, 1))
 
 
 def pandas_plot_multi_groupby_min(results, first_column_to_group_by, second_column_to_group_by, graph_type='line',
