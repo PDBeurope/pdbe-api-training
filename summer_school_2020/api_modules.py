@@ -98,8 +98,22 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
     group_field = 'pdb_id'
     search_term = format_sequence_search_terms(sequence=sequence, filter_terms=filter_terms, group_field=group_field)
     response = make_request(search_term, number_of_rows)
-    results = response.get('grouped', {}).get(group_field, {}).get('groups', [])[0].get('doclist', {}).get('docs', [])
-    return results
+    results = response.get('grouped', {}).get(group_field, {}).get('groups', [])
+    print('Number of results {}'.format(len(results)))
+    fasta_results = response.get('xjoin_fasta').get('external')
+
+    ret = []
+    for row in results:
+        doc = row.get('doclist', {}).get('docs', [])[0]
+        group_id = doc.get(group_field)
+        for fasta_row in fasta_results:
+            if fasta_row.get('joinId') == group_id:
+                fasta_doc = fasta_row.get('doc', {})
+                doc['percent_identity'] = fasta_doc.get('percent_identity')
+                doc['e_value'] = fasta_doc.get('e_value')
+
+        ret.append(doc)
+    return ret
 
 
 def run_search(search_terms, filter_terms=None, number_of_rows=10):
