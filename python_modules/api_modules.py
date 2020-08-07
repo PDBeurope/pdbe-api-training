@@ -167,8 +167,7 @@ def pandas_dataset(list_of_results):
     return df
 
 
-def pandas_count(list_of_results, column_to_group_by):
-    df = pandas_dataset(list_of_results)
+def pandas_count(df, column_to_group_by):
     ds = df.groupby(column_to_group_by)['pdb_id'].nunique()
     return ds
 
@@ -182,22 +181,20 @@ def pandas_min_max(list_of_results, column_to_group_by, get_min=True):
     return ds
 
 
-def pandas_plot(list_of_results, column_to_group_by, graph_type='bar'):
-    ds = pandas_count(list_of_results=list_of_results, column_to_group_by=column_to_group_by)
+def pandas_plot(df, column_to_group_by, graph_type='bar'):
+    ds = pandas_count(df=df, column_to_group_by=column_to_group_by)
     ds.plot(kind=graph_type)
 
 
-def pandas_plot_multi_groupby(results, first_column_to_group_by, second_column_to_group_by, y_axis='pdb_id',
+def pandas_plot_multi_groupby(df, first_column_to_group_by, second_column_to_group_by, y_axis='pdb_id',
                               graph_type='line'):
-    df = pandas_dataset(results)
     new_df = df.groupby([first_column_to_group_by, second_column_to_group_by])
     ds = new_df.count().unstack().reset_index(first_column_to_group_by)
     ds.plot(x=first_column_to_group_by, y=y_axis, kind=graph_type).legend(bbox_to_anchor=(1.04, 1))
 
 
-def pandas_plot_multi_groupby_min(results, first_column_to_group_by, second_column_to_group_by, graph_type='line',
+def pandas_plot_multi_groupby_min(df, first_column_to_group_by, second_column_to_group_by, graph_type='line',
                                   use_min=False, use_max=False):
-    df = pandas_dataset(results)
     new_df = df.groupby([first_column_to_group_by])[second_column_to_group_by]
     if use_min:
         ds = new_df.min()
@@ -209,6 +206,5 @@ def pandas_plot_multi_groupby_min(results, first_column_to_group_by, second_colu
     ds.plot(x=first_column_to_group_by, y=second_column_to_group_by, kind=graph_type)
 
 
-def pandas_box_plot(results, first_column_to_group_by, second_column_to_group_by):
-    df = pandas_dataset(results)
+def pandas_box_plot(df, first_column_to_group_by, second_column_to_group_by):
     df.boxplot(column=second_column_to_group_by, by=first_column_to_group_by)
