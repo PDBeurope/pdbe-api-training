@@ -62,25 +62,29 @@ def format_sequence_search_terms(sequence, group_field='pdb_id', filter_terms=No
     :param lst filter_terms: Terms to filter the results by
     :return str: search string
     """
-    params = {'group': 'true',
-              'group.field': group_field,
-              'group.ngroups': 'true',
-              'json.nl': 'map',
-              'start': '0',
-              'sort': 'fasta(e_value) asc',
-              'xjoin_fasta': 'true',
-              'bf': 'fasta(percentIdentity)',
-              'xjoin_fasta.external.expupperlim': '0.1',
-              'xjoin_fasta.external.sequence': sequence,
-              'q': '*:*',
-              'fq': '{!xjoin}xjoin_fasta'
-              }
+    params = {
+        # 'group': 'true',
+        # 'group.field': group_field,
+        # 'group.ngroups': 'true',
+        'json.nl': 'map',
+        'start': '0',
+        'sort': 'fasta(e_value) asc',
+        'xjoin_fasta': 'true',
+        'bf': 'fasta(percentIdentity)',
+        'xjoin_fasta.external.expupperlim': '0.1',
+        'xjoin_fasta.external.sequence': sequence,
+        'q': '*:*',
+        'fq': '{!xjoin}xjoin_fasta'
+    }
     search_list = []
     for item in params:
         value = params[item]
         search_list.append('{}={}'.format(item, value))
     search_string = '&'.join(search_list)
     if filter_terms:
+        for term in ['pdb_id', 'entity_id', 'entry_entity']:
+            filter_terms.append(term)
+        filter_terms = list(set(filter_terms))
         filter_string = '&fl={}'.format(','.join(filter_terms))
         search_string += filter_string
 
@@ -95,10 +99,11 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
     :param int number_of_rows: number of results to return
     :return lst: List of results
     """
-    group_field = 'pdb_id'
+    group_field = 'entry_entity'
     search_term = format_sequence_search_terms(sequence=sequence, filter_terms=filter_terms, group_field=group_field)
     response = make_request(search_term, number_of_rows)
-    results = response.get('grouped', {}).get(group_field, {}).get('groups', [])
+    # results = response.get('grouped', {}).get(group_field, {}).get('groups', [])
+    results = response.get('response', {}).get('docs', [])
     print('Number of results {}'.format(len(results)))
 
     raw_fasta_results = response.get('xjoin_fasta').get('external')
@@ -109,18 +114,21 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
         fasta_doc = fasta_row.get('doc', {})
         percent_identity = fasta_doc.get('percent_identity')
         e_value = fasta_doc.get('e_value')
+        pdb_id_chain = fasta_doc.get('pdb_id_chain').split('_')
+        pdb_id = pdb_id_chain[0].lower()
+        chain_id = pdb_id_chain[-1]
         fasta_results[join_id] = {'e_value': e_value,
                                   'percentage_identity': percent_identity}
 
     ret = []
     for row in results:
-        doc = row.get('doclist', {}).get('docs', [])[0]
-        group_id = doc.get(group_field)
-        group_fasta_results = fasta_results.get(group_id, {})
-        doc['e_value'] = group_fasta_results.get('e_value')
-        doc['percentage_identity'] = group_fasta_results.get('percentage_identity')
+        # doc = row.get('doclist', {}).get('docs', [])[0]
+        pdb_id = row.get('pdb_id')
+        entry_fasta_results = fasta_results.get(pdb_id, {})
+        row['e_value'] = entry_fasta_results.get('e_value')
+        row['percentage_identity'] = entry_fasta_results.get('percentage_identity')
 
-        ret.append(doc)
+        ret.append(row)
     return ret
 
 
