@@ -1,22 +1,24 @@
 import pandas as pd
 import requests
+# from pprint import pprint
 
 # settings for PDBe API
 base_url = "https://www.ebi.ac.uk/pdbe/"  # the beginning of the URL for PDBe's API.
 search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDBe's search API.
 
 
-def make_request(search_term, number_of_rows=10):
+def make_request_post(search_dict, number_of_rows=10):
     """
     makes a get request to the PDBe API
-    :param search_term: the terms used to search
+    :param dict search_dict: the terms used to search
     :param number_of_rows: number or rows to return - limited to 10
     :return dict: response JSON
     """
-    search_variables = '&wt=json&rows={}'.format(number_of_rows)
-    url = search_url + search_term + search_variables
-    print(url)
-    response = requests.get(url)
+    if 'rows' not in search_dict:
+        search_dict['rows'] = number_of_rows
+    search_dict['wt'] = 'json'
+    # pprint(search_dict)
+    response = requests.post(search_url, data=search_dict)
 
     if response.status_code == 200:
         return response.json()
@@ -26,39 +28,37 @@ def make_request(search_term, number_of_rows=10):
     return {}
 
 
-def format_search_terms(search_terms, filter_terms=None):
-    """
-    Change search terms from a dictionary to a string for the URL
-    :param dict search_terms: dictionary of search terms
-    :param lst filter_terms: list of terms to filter with
-    :return str: search string
-    """
-    filter_string = ''
+def quote_value(value):
+    if ' ' in value and '[' not in value:
+        if '"' not in value:
+            value = '"{}"'.format(value)
+        elif "'" not in value:
+            value = "'{}'".format(value)
+    return value
+
+
+def format_search_terms_post(search_terms, filter_terms=None):
     search_list = []
     if isinstance(search_terms, dict):
         for key in search_terms:
-            term = search_terms.get(key)
-            if ' ' in term and not '[' in term:
-                if '"' not in term:
-                    term = '"{}"'.format(term)
-                elif "'" not in term:
-                    term = "'{}'".format(term)
-            search_list.append('{}:{}'.format(key, term))
-        search_string = ' AND '.join(search_list)
+            value = search_terms.get(key)
+            value = quote_value(value=value)
+            search_list.append('{}:{}'.format(key, value))
+        q = ' AND '.join(search_list)
+        ret = {'q': q}
         if filter_terms:
-            filter_string = '&fl={}'.format(','.join(filter_terms))
-        final_search_string = 'q={}{}'.format(search_string, filter_string)
-        return final_search_string
+            fl = '{}'.format(','.join(filter_terms))
+            ret['fl'] = fl
+        return ret
     else:
         print('search terms is not defined as a dictionary')
-        return ''
+        return {}
 
 
-def format_sequence_search_terms(sequence, group_field='pdb_id', filter_terms=None):
+def format_sequence_search_terms(sequence, filter_terms=None):
     """
     Format parameters for a sequence search
     :param str sequence: one letter sequence
-    :param str group_field: Field to group by
     :param lst filter_terms: Terms to filter the results by
     :return str: search string
     """
@@ -76,19 +76,13 @@ def format_sequence_search_terms(sequence, group_field='pdb_id', filter_terms=No
         'q': '*:*',
         'fq': '{!xjoin}xjoin_fasta'
     }
-    search_list = []
-    for item in params:
-        value = params[item]
-        search_list.append('{}={}'.format(item, value))
-    search_string = '&'.join(search_list)
     if filter_terms:
         for term in ['pdb_id', 'entity_id', 'entry_entity']:
             filter_terms.append(term)
         filter_terms = list(set(filter_terms))
-        filter_string = '&fl={}'.format(','.join(filter_terms))
-        search_string += filter_string
+        params['fl'] = ','.join(filter_terms)
 
-    return search_string
+    return params
 
 
 def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
@@ -100,8 +94,8 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
     :return lst: List of results
     """
     group_field = 'entry_entity'
-    search_term = format_sequence_search_terms(sequence=sequence, filter_terms=filter_terms, group_field=group_field)
-    response = make_request(search_term, number_of_rows)
+    search_dict = format_sequence_search_terms(sequence=sequence, filter_terms=filter_terms)
+    response = make_request_post(search_dict=search_dict, number_of_rows=number_of_rows)
     # results = response.get('grouped', {}).get(group_field, {}).get('groups', [])
     results = response.get('response', {}).get('docs', [])
     print('Number of results {}'.format(len(results)))
@@ -140,13 +134,20 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10):
     :param int number_of_rows: number of search rows to return
     :return lst: list of results
     """
-    search_term = format_search_terms(search_terms, filter_terms)
-    if search_term:
-        response = make_request(search_term, number_of_rows)
+    search_params = format_search_terms_post(search_terms=search_terms, filter_terms=filter_terms)
+    if search_params:
+        response = make_request_post(search_dict=search_params, number_of_rows=number_of_rows)
         if response:
             results = response.get('response', {}).get('docs', [])
             print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
             return results
+
+    # if search_term:
+    #    response = make_request(search_term, number_of_rows)
+    #    if response:
+    #        results = response.get('response', {}).get('docs', [])
+    #        print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
+    #        return results
     print('No results')
     return []
 
