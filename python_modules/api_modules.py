@@ -6,6 +6,30 @@ import requests
 base_url = "https://www.ebi.ac.uk/pdbe/"  # the beginning of the URL for PDBe's API.
 search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDBe's search API.
 
+pdbe_kb_interacting_residues_api = base_url + "graph-api/uniprot/ligand_sites/"
+
+
+def get_url_with_accession(url, accession):
+    url = url + accession
+    ret = get_url(url)
+    return ret.get(accession, {})
+
+
+def get_url(url):
+    """
+    Makes a request to a URL. Returns a JSON of the results
+    :param str url:
+    :return dict:
+    """
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("[No data retrieved - %s] %s" % (response.status_code, response.text))
+
+    return {}
+
 
 def make_request_post(search_dict, number_of_rows=10):
     """
