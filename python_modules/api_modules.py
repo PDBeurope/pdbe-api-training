@@ -176,6 +176,27 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10):
     return []
 
 
+def get_ligand_site_data(uniprot_accession):
+    url = pdbe_kb_interacting_residues_api + uniprot_accession
+    print(url)
+    data = get_url(url=url)
+    data_to_ret = []
+    for data_uniprot_accession in data:
+        accession_data = data.get(data_uniprot_accession)
+        for row in accession_data.get('data'):
+            ligand_accession = row.get('accession')
+            name = row.get('name')
+            num_atoms = row.get('additionalData', {}).get('numAtoms')
+            for residue in row.get('residues', []):
+                residue['ligand_accession'] = ligand_accession
+                residue['ligand_name'] = name
+                residue['ligand_num_atoms'] = num_atoms
+                residue['uniprot_accession'] = uniprot_accession
+                residue['interation_ratio'] = len(residue.get('interactingPDBEntries', [])) / len(
+                    residue.get('allPDBEntries', []))
+                data_to_ret.append(residue)
+    return data_to_ret
+
 def change_lists_to_strings(results):
     """
     updates lists to strings for loading into Pandas
