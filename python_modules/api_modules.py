@@ -62,21 +62,23 @@ def quote_value(value):
 
 
 def format_search_terms_post(search_terms, filter_terms=None):
-    search_list = []
-    if isinstance(search_terms, dict):
-        for key in search_terms:
-            value = search_terms.get(key)
-            value = quote_value(value=value)
-            search_list.append('{}:{}'.format(key, value))
-        q = ' AND '.join(search_list)
-        ret = {'q': q}
-        if filter_terms:
-            fl = '{}'.format(','.join(filter_terms))
-            ret['fl'] = fl
-        return ret
-    else:
-        print('search terms is not defined as a dictionary')
-        return {}
+    ret = {'q': str(search_terms)}
+
+    #search_list = []
+    #if isinstance(search_terms, dict):
+    #    for key in search_terms:
+    #        value = search_terms.get(key)
+    #        value = quote_value(value=value)
+    #        search_list.append('{}:{}'.format(key, value))
+    #    q = ' AND '.join(search_list)
+    #    ret = {'q': q}
+    if filter_terms:
+        fl = '{}'.format(','.join(filter_terms))
+        ret['fl'] = fl
+    return ret
+    #else:
+    #    print('search terms is not defined as a dictionary')
+    #    return {}
 
 
 def format_sequence_search_terms(sequence, filter_terms=None):
@@ -153,7 +155,7 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
 def run_search(search_terms, filter_terms=None, number_of_rows=10):
     """
     Run the search with set of search terms
-    :param dict search_terms: dictionary of search terms
+    :param str search_terms: string of search terms
     :param list filter_terms: list of terms to filter by
     :param int number_of_rows: number of search rows to return
     :return lst: list of results
@@ -163,7 +165,7 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10):
         response = make_request_post(search_dict=search_params, number_of_rows=number_of_rows)
         if response:
             results = response.get('response', {}).get('docs', [])
-            print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
+            print('Number of results for {}: {}'.format(search_terms, len(results)))
             return results
 
     # if search_term:

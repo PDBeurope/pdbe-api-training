@@ -2,3 +2,4 @@ requests
 matplotlib
 pandas
 jupyter
+solrq
