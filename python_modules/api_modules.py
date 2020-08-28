@@ -63,22 +63,10 @@ def quote_value(value):
 
 def format_search_terms_post(search_terms, filter_terms=None):
     ret = {'q': str(search_terms)}
-
-    #search_list = []
-    #if isinstance(search_terms, dict):
-    #    for key in search_terms:
-    #        value = search_terms.get(key)
-    #        value = quote_value(value=value)
-    #        search_list.append('{}:{}'.format(key, value))
-    #    q = ' AND '.join(search_list)
-    #    ret = {'q': q}
     if filter_terms:
         fl = '{}'.format(','.join(filter_terms))
         ret['fl'] = fl
     return ret
-    #else:
-    #    print('search terms is not defined as a dictionary')
-    #    return {}
 
 
 def format_sequence_search_terms(sequence, filter_terms=None):
@@ -89,9 +77,6 @@ def format_sequence_search_terms(sequence, filter_terms=None):
     :return str: search string
     """
     params = {
-        # 'group': 'true',
-        # 'group.field': group_field,
-        # 'group.ngroups': 'true',
         'json.nl': 'map',
         'start': '0',
         'sort': 'fasta(e_value) asc',
@@ -103,7 +88,7 @@ def format_sequence_search_terms(sequence, filter_terms=None):
         'fq': '{!xjoin}xjoin_fasta'
     }
     if filter_terms:
-        for term in ['pdb_id', 'entity_id', 'entry_entity']:
+        for term in ['pdb_id', 'entity_id', 'entry_entity', 'chain_id']:
             filter_terms.append(term)
         filter_terms = list(set(filter_terms))
         params['fl'] = ','.join(filter_terms)
@@ -130,25 +115,33 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
     fasta_results = {}
 
     for fasta_row in raw_fasta_results:
-        join_id = fasta_row.get('joinId')
+        # join_id = fasta_row.get('joinId')
         fasta_doc = fasta_row.get('doc', {})
         percent_identity = fasta_doc.get('percent_identity')
         e_value = fasta_doc.get('e_value')
+        return_sequence = fasta_row.get('return_sequence_string')
         pdb_id_chain = fasta_doc.get('pdb_id_chain').split('_')
         pdb_id = pdb_id_chain[0].lower()
         chain_id = pdb_id_chain[-1]
+        join_id = '{}_{}'.format(pdb_id, chain_id)
         fasta_results[join_id] = {'e_value': e_value,
-                                  'percentage_identity': percent_identity}
+                                  'percentage_identity': percent_identity,
+                                  'return_sequence': return_sequence}
 
     ret = []
     for row in results:
         # doc = row.get('doclist', {}).get('docs', [])[0]
-        pdb_id = row.get('pdb_id')
-        entry_fasta_results = fasta_results.get(pdb_id, {})
-        row['e_value'] = entry_fasta_results.get('e_value')
-        row['percentage_identity'] = entry_fasta_results.get('percentage_identity')
+        pdb_id = row.get('pdb_id').lower()
+        chain_ids = row.get('chain_id')
+        for chain_id in chain_ids:
+            search_id = '{}_{}'.format(pdb_id, chain_id)
+            entry_fasta_results = fasta_results.get(search_id, {})
+            if entry_fasta_results:
+                row['e_value'] = entry_fasta_results.get('e_value')
+                row['percentage_identity'] = entry_fasta_results.get('percentage_identity')
+                row['result_sequence'] = entry_fasta_results.get('return_sequence_string')
 
-        ret.append(row)
+                ret.append(row)
     return ret
 
 
@@ -198,6 +191,7 @@ def get_ligand_site_data(uniprot_accession):
                     residue.get('allPDBEntries', []))
                 data_to_ret.append(residue)
     return data_to_ret
+
 
 def change_lists_to_strings(results):
     """
