@@ -61,11 +61,13 @@ def quote_value(value):
     return value
 
 
-def format_search_terms_post(search_terms, filter_terms=None):
+def format_search_terms_post(search_terms, filter_terms=None, **kwargs):
     ret = {'q': str(search_terms)}
     if filter_terms:
         fl = '{}'.format(','.join(filter_terms))
         ret['fl'] = fl
+    for arg in kwargs:
+        ret[arg] = kwargs[arg]
     return ret
 
 
@@ -145,7 +147,7 @@ def run_sequence_search(sequence, filter_terms=None, number_of_rows=10):
     return ret
 
 
-def run_search(search_terms, filter_terms=None, number_of_rows=10):
+def run_search(search_terms, filter_terms=None, number_of_rows=10, **kwargs):
     """
     Run the search with set of search terms
     :param str search_terms: string of search terms
@@ -161,12 +163,6 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10):
             print('Number of results for {}: {}'.format(search_terms, len(results)))
             return results
 
-    # if search_term:
-    #    response = make_request(search_term, number_of_rows)
-    #    if response:
-    #        results = response.get('response', {}).get('docs', [])
-    #        print('Number of results for {}: {}'.format(','.join(search_terms.values()), len(results)))
-    #        return results
     print('No results')
     return []
 
