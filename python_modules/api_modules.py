@@ -209,7 +209,13 @@ def change_lists_to_strings(results):
 def pandas_dataset(list_of_results):
     results = change_lists_to_strings(list_of_results)  # we have added our function to change lists to strings
     df = pd.DataFrame(results)
+    return df
 
+
+def explode_dataset(result):
+    df = pd.DataFrame(result)
+    for column in df.select_dtypes(include='object'):
+        df = df.explode(column=column).reset_index(drop=True)
     return df
 
 
