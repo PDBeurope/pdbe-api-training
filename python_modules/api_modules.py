@@ -183,7 +183,7 @@ def get_ligand_site_data(uniprot_accession):
                 residue['ligand_name'] = name
                 residue['ligand_num_atoms'] = num_atoms
                 residue['uniprot_accession'] = uniprot_accession
-                residue['interation_ratio'] = len(residue.get('interactingPDBEntries', [])) / len(
+                residue['interaction_ratio'] = len(residue.get('interactingPDBEntries', [])) / len(
                     residue.get('allPDBEntries', []))
                 data_to_ret.append(residue)
     return data_to_ret
