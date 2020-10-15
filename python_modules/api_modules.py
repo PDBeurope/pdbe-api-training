@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+
 # from pprint import pprint
 
 # settings for PDBe API
@@ -7,6 +8,15 @@ base_url = "https://www.ebi.ac.uk/pdbe/"  # the beginning of the URL for PDBe's 
 search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDBe's search API.
 
 pdbe_kb_interacting_residues_api = base_url + "graph-api/uniprot/ligand_sites/"
+pdbe_kb_api_uniprot_base_url = base_url + "graph-api/uniprot/"
+
+
+def get_ligand_site_url():
+    return pdbe_kb_api_uniprot_base_url + "ligand_sites/"
+
+
+def get_interaction_site_url():
+    return pdbe_kb_api_uniprot_base_url + "interface_residues/"
 
 
 def get_url_with_accession(url, accession):
@@ -168,7 +178,7 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10, **kwargs):
 
 
 def get_ligand_site_data(uniprot_accession):
-    url = pdbe_kb_interacting_residues_api + uniprot_accession
+    url = get_ligand_site_url() + uniprot_accession
     print(url)
     data = get_url(url=url)
     data_to_ret = []
@@ -185,6 +195,34 @@ def get_ligand_site_data(uniprot_accession):
                 residue['uniprot_accession'] = uniprot_accession
                 residue['interaction_ratio'] = len(residue.get('interactingPDBEntries', [])) / len(
                     residue.get('allPDBEntries', []))
+                data_to_ret.append(residue)
+    return data_to_ret
+
+
+def get_macromolecule_interaction_data(uniprot_accession):
+    url = get_interaction_site_url() + uniprot_accession
+    print(url)
+    data = get_url(url=url)
+    data_to_ret = []
+
+    for data_uniprot_accession in data:
+        accession_data = data.get(data_uniprot_accession)
+        length = accession_data.get('length')
+        for row in accession_data.get('data'):
+            interaction_accession = row.get('accession')
+            all_pdb_entries = row.get('allPDBEntries')
+            name = row.get('name')
+            accession_type = row.get('additionalData', {}).get('type')
+            for residue in row.get('residues', []):
+                residue['interaction_accession'] = interaction_accession
+                residue['interaction_name'] = name
+                residue['length'] = length
+                residue['uniprot_accession'] = uniprot_accession
+                residue['interaction_accession_type'] = accession_type
+                interacting_entries = residue.get('interactingPDBEntries', [])
+                residue['interacting_pdb_entries'] = interacting_entries
+                residue['interaction_ratio'] = len(interacting_entries) / len(all_pdb_entries)
+                residue['allPDBEntries'] = all_pdb_entries
                 data_to_ret.append(residue)
     return data_to_ret
 
