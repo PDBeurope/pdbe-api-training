@@ -250,10 +250,13 @@ def pandas_dataset(list_of_results):
     return df
 
 
-def explode_dataset(result):
+def explode_dataset(result, column_to_explode=None):
     df = pd.DataFrame(result)
-    for column in df.select_dtypes(include='object'):
-        df = df.explode(column=column).reset_index(drop=True)
+    if column_to_explode:
+        df = df.explode(column=column_to_explode).reset_index(drop=True)
+    else:
+        for column in df.select_dtypes(include='object'):
+            df = df.explode(column=column).reset_index(drop=True)
     return df
 
 
