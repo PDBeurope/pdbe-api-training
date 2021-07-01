@@ -220,7 +220,7 @@ def get_macromolecule_interaction_data(uniprot_accession):
                 residue['uniprot_accession'] = uniprot_accession
                 residue['interaction_accession_type'] = accession_type
                 interacting_entries = residue.get('interactingPDBEntries', [])
-                residue['interacting_pdb_entries'] = interacting_entries
+                # residue['interacting_pdb_entries'] = interacting_entries
                 residue['interaction_ratio'] = len(interacting_entries) / len(all_pdb_entries)
                 residue['allPDBEntries'] = all_pdb_entries
                 data_to_ret.append(residue)
