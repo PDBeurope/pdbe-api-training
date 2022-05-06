@@ -41,6 +41,7 @@ Jupyter Notebook will open a window in your browser, and you can select the spec
 
 * **Mihaly Varadi** - *Initial work* - [github](https://github.com/mvaradi)
 * **John Berrisford** - *Additional notebooks* - [github](https://github.com/berrisfordjohn)
+* **Joseph Ellaway** - *Protein superposing notebooks* - [github](https://github.com/Joseph-Ellaway)
 
 ## License
 
