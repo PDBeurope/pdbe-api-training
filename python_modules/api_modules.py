@@ -9,6 +9,8 @@ search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDB
 
 pdbe_kb_interacting_residues_api = base_url + "graph-api/uniprot/ligand_sites/"
 pdbe_kb_api_uniprot_base_url = base_url + "graph-api/uniprot/"
+pdbe_kb_api_ligand_base_url = base_url + "graph-api/compound/"
+
 
 
 def get_ligand_site_url():
@@ -17,6 +19,14 @@ def get_ligand_site_url():
 
 def get_interaction_site_url():
     return pdbe_kb_api_uniprot_base_url + "interface_residues/"
+
+
+def get_similar_proteins_url():
+    return pdbe_kb_api_uniprot_base_url + "similar_proteins/"
+
+
+def get_similar_ligands_url():
+    return pdbe_kb_api_ligand_base_url + "similarity/"
 
 
 def get_url_with_accession(url, accession):
@@ -177,6 +187,7 @@ def run_search(search_terms, filter_terms=None, number_of_rows=10, **kwargs):
     return []
 
 
+
 def get_ligand_site_data(uniprot_accession):
     url = get_ligand_site_url() + uniprot_accession
     print(url)
@@ -301,3 +312,24 @@ def pandas_plot_multi_groupby_min(df, first_column_to_group_by, second_column_to
 
 def pandas_box_plot(df, first_column_to_group_by, second_column_to_group_by):
     df.boxplot(column=second_column_to_group_by, by=first_column_to_group_by)
+
+
+def get_similar_ligand_data(het_code, similarity_cutoff):
+    url = get_similar_ligands_url() + het_code
+    print(url)
+    data = get_url(url=url)
+    similar_ligands ={}
+    for row in data[het_code] :
+        if 'similar_ligands' in row :
+            sl= row['similar_ligands']
+            for lig in sl :
+                if float(lig['similarity_score']) >= similarity_cutoff :
+                    similar_ligands[lig['chem_comp_id']] = lig['similarity_score']
+
+    return similar_ligands
+
+def get_similar_protein_data(accession,identity) :
+    url = f"{get_similar_proteins_url()}/{accession}/{identity}"
+    print(url)
+    data = get_url(url=url)
+    return data
