@@ -10,6 +10,7 @@ search_url = base_url + 'search/pdb/select?'  # the rest of the URL used for PDB
 pdbe_kb_interacting_residues_api = base_url + "graph-api/uniprot/ligand_sites/"
 pdbe_kb_api_uniprot_base_url = base_url + "graph-api/uniprot/"
 pdbe_kb_api_ligand_base_url = base_url + "graph-api/compound/"
+pdbe_kb_3dbeacons_url = base_url+ "pdbe-kb/3dbeacons/api/uniprot/summary/"
 
 
 
@@ -333,3 +334,30 @@ def get_similar_protein_data(accession,identity) :
     print(url)
     data = get_url(url=url)
     return data
+
+
+## function for searching in the 3D Beacons Network
+
+def search_3dbeacons(accession):
+    url = f"{pdbe_kb_3dbeacons_url}/{accession}.json"
+    #print(url)
+    data = get_url(url=url)
+    return data
+
+
+def get_predicted_models(uniprot_accession):
+    dictfilt = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
+    data = search_3dbeacons(uniprot_accession)
+    data_to_ret = []
+    structures = data.get('structures')
+    for row in structures:
+        my_row = row['summary']
+        necc_rows = [keys for keys in my_row.keys() if keys !='entities']
+        #print(necc_rows)
+        necc_rows = dictfilt(my_row,necc_rows)
+        #print(necc_rows)
+        for item in my_row['entities'] :
+            dict3 = {k:v for d in (necc_rows,item) for k,v in d.items()}
+            #print (dict3)
+            data_to_ret.append(dict3)
+    return data_to_ret
