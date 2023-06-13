@@ -29,6 +29,9 @@ def get_similar_proteins_url():
 def get_similar_ligands_url():
     return pdbe_kb_api_ligand_base_url + "similarity/"
 
+def get_ligand_role_url() :
+    return pdbe_kb_api_uniprot_base_url + "ligands/"
+
 
 def get_url_with_accession(url, accession):
     url = url + accession
@@ -336,7 +339,7 @@ def get_similar_protein_data(accession,identity) :
     return data
 
 
-## function for searching in the 3D Beacons Network
+# function for searching in the 3D Beacons Network
 
 def search_3dbeacons(accession):
     url = f"{pdbe_kb_3dbeacons_url}/{accession}.json"
@@ -344,6 +347,7 @@ def search_3dbeacons(accession):
     data = get_url(url=url)
     return data
 
+# function to converted predicted models API in pandas dataframe
 
 def get_predicted_models(uniprot_accession):
     dictfilt = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
@@ -359,5 +363,25 @@ def get_predicted_models(uniprot_accession):
         for item in my_row['entities'] :
             dict3 = {k:v for d in (necc_rows,item) for k,v in d.items()}
             #print (dict3)
+            data_to_ret.append(dict3)
+    return data_to_ret
+
+# function to get ligand annotations
+
+def get_ligand_role_data(uniprot_accession):
+    url = get_ligand_role_url() + uniprot_accession
+    #print(url)
+    my_data = get_url(url=url)
+    data = my_data[uniprot_accession]
+    data_to_ret = []
+    for ligand_row in data :
+        #print(ligand_row)
+        for ligand in ligand_row :
+            dict1=ligand_row[ligand]
+            dict1['pdbs'] = ",".join(dict1['pdbs'])
+            dict1['acts_as'] = ",".join([item.strip() for item in dict1['acts_as']])
+            dict2 = {"ligand_code":ligand}
+            dict3 = {k:v for d in (dict1,dict2) for k,v in d.items()}
+            #print(dict3)
             data_to_ret.append(dict3)
     return data_to_ret
