@@ -2,3 +2,6 @@
 .idea
 venv
 *.pyc
+
+summer_school_2024/similar_proteins*
+summer_school_2024/search_results*
