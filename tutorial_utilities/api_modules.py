@@ -349,7 +349,7 @@ def search_3dbeacons(accession):
 
 # function to converted predicted models API in pandas dataframe
 
-def get_predicted_models(uniprot_accession):
+def get_all_models(uniprot_accession):
     dictfilt = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
     data = search_3dbeacons(uniprot_accession)
     data_to_ret = []
