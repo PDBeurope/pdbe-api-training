@@ -44,6 +44,7 @@ Jupyter Notebook will open a window in your browser, and you can select the spec
 * **David Armstrong** - *PDBe statistics notebooks and other maintenance* - [github](https://github.com/drarmstrong)
 * **Preeti Choudhary** - *Ligand interactions and predicted models notebooks* - [github](https://github.com/cypreeti)
 * **Joseph Ellaway** - *Protein superposing notebooks* - [github](https://github.com/Joseph-Ellaway)
+* **Marcus Bage** - *Complexes notebook and other maintenance* - [github](https://github.com/mbage)
 
 ## License
 
