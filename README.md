@@ -17,8 +17,8 @@ pip3 install --upgrade pip
 pip3 install jupyter
 ```
 
-For Windows machines (optionally also for Linux/OSX) you can install Jupyter with Anaconda:
-https://www.anaconda.com/download/
+For Windows machines (optionally also for Linux/OSX) you can install Jupyter with conda-forge:
+https://conda-forge.org/
 
 ### Prerequisites
 
@@ -36,6 +36,16 @@ jupyter notebook
 ```
 
 Jupyter Notebook will open a window in your browser, and you can select the specific notebooks you would like to view.
+
+
+## Install and run with Docker
+
+```shell
+docker build -t pdbe-api-training .
+docker run -p 8888:8888 pdbe-api-training
+```
+
+
 
 ## Authors
 
