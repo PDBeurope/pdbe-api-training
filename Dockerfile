@@ -1,5 +1,7 @@
 FROM python:3.10
 
+LABEL maintainer="pdbegroup"
+
 WORKDIR /pdbe_api_tutorial
 
 COPY ./requirements.txt /pdbe_api_tutorial/requirements.txt 
