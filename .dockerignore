@@ -1,0 +1,38 @@
+
+
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+Dockerfile
+
+# Virtual environments
+venv
+env
+.venv
+.env
+
+# Python
+*.pyc
+.Python
+
+# Editors
+vscode
+.idea
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Trash
+pdbe_tutorial_2024/.Trash-0/
+.Trash-0/
