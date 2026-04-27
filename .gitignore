@@ -20,3 +20,5 @@ venv/
 # Trash
 pdbe_tutorial_2024/.Trash-0/
 .Trash-0/
+
+*/__pycache__/
