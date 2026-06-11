@@ -22,10 +22,10 @@ docker build -t pdbe-api-training .
 
 ### Run the Docker container
 ```console
-docker run -p 8888:8888 -v /path/to/your/pdbe-api-training/pdbe_tutorial_2024/:/pdbe_api_tutorial/pdbe_tutorial_2024 pdbe-api-training
+docker run -p 8888:8888 -v $(pwd)/pdbe_tutorial:/pdbe_api_tutorial/pdbe_tutorial pdbe-api-training
 ```
 
-Now open your browser and go to `http://localhost:8888/` and you should see the Jupyter Notebook interface. The `-v` flag ensures changes you make to the notebooks will be saved in the `pdbe_tutorial_2024` directory in the repository cloned to your local machine.
+Now open your browser and go to `http://localhost:8888/` and you should see the Jupyter Notebook interface. The `-v` flag ensures changes you make to the notebooks will be saved in the `pdbe_tutorial` directory in the repository cloned to your local machine.
 
 ## Getting started with Binder
 
